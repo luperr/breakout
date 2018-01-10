@@ -1,6 +1,7 @@
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <cmath>
+#include <chrono>
 
 using namespace std;
 using namespace sf;
@@ -139,6 +140,8 @@ int main(){
 
 
 	while(true){
+		auto timePoint1(chrono::high_resolution_clock::now());
+
 		window.clear(Color::Black);
 
 		Event event;
@@ -167,6 +170,16 @@ int main(){
 		for(auto& brick : bricks)
 			window.draw(brick.shape);
 		window.display();
+
+		auto timePoint2(chrono::high_resolution_clock::now());
+
+		auto elapsedTime(timePoint2 - timePoint1);
+		FrameTime ft{chrono::duration_cast<chrono::duration<float, milli>>(elapsedTime).count()};
+
+		auto ftSeconds(ft / 1000.f);
+		auto fps(1.f /ftSeconds);
+
+		window.setTitle("FT: " + to_string(ft) + "\tFPS: " + to_string(fps));
 	}
 
 	return 0;
