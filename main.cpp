@@ -5,8 +5,10 @@
 using namespace std;
 using namespace sf;
 
+using FrameTime = float;
+
 constexpr int windowWidth{800}, windowHeight{600};
-constexpr float ballRadius{10.f}, ballVelocity{8.f};
+constexpr float ballRadius{10.f}, ballVelocity{6.f};
 constexpr float paddleWidth{60.f}, paddleHeight{20.f}, paddleVelocity{6.f};
 constexpr float blockHeight{20.f}, blockWidth{60.f};
 constexpr int countBlockX{11}, countBlockY{4}; 
@@ -30,16 +32,26 @@ struct Ball{
 		else if(bottom() > windowHeight) velocity.y = -ballVelocity;	
 	}
 
-	float x() {return shape.getPosition().x;}
-	float y() {return shape.getPosition().y;}
-	float left() {return x() - shape.getRadius();}
-	float right() {return x() + shape.getRadius();}
-	float top() {return y() - shape.getRadius();}
-	float bottom() {return y() + shape.getRadius();}
+	float x() 		const noexcept {return shape.getPosition().x;}
+	float y() 		const noexcept {return shape.getPosition().y;}
+	float left() 	const noexcept {return x() - shape.getRadius();}
+	float right() 	const noexcept {return x() + shape.getRadius();}
+	float top() 	const noexcept {return y() - shape.getRadius();}
+	float bottom() 	const noexcept {return y() + shape.getRadius();}
 };
 
-struct Paddle{
+struct Rectangle{
 	RectangleShape shape;
+	float x() 		const noexcept {return shape.getPosition().x;}
+	float y() 		const noexcept {return shape.getPosition().y;}
+	float left()	const noexcept {return x() - shape.getSize().x/2.f;}
+	float right() 	const noexcept {return x() + shape.getSize().x/2.f;}
+	float top() 	const noexcept {return y() - shape.getSize().y/2.f;}
+	float bottom() 	const noexcept {return y() + shape.getSize().y/2.f;}
+	
+};
+
+struct Paddle : public Rectangle{
 	Vector2f velocity;
 	
 
@@ -59,17 +71,9 @@ struct Paddle{
 			velocity.x = paddleVelocity;
 		else velocity.x = 0;
 	}
-	float x() {return shape.getPosition().x;}
-	float y() {return shape.getPosition().y;}
-	float left() {return x() - shape.getSize().x/2.f;}
-	float right() {return x() + shape.getSize().x/2.f;}
-	float top() {return y() - shape.getSize().y/2.f;}
-	float bottom() {return y() + shape.getSize().y/2.f;}
-	
 };
 
-struct Brick{
-	RectangleShape shape;
+struct Brick : public Rectangle{
 	bool destroyed {false};
 
 	Brick(float mX, float mY){
@@ -78,12 +82,6 @@ struct Brick{
 		shape.setFillColor(Color::Yellow);
 		shape.setOrigin(blockWidth/2.f, blockHeight/2.f);
 	}
-	float x() {return shape.getPosition().x;}
-	float y() {return shape.getPosition().y;}
-	float left() {return x() - shape.getSize().x/2.f;}
-	float right() {return x() + shape.getSize().x/2.f;}
-	float top() {return y() - shape.getSize().y/2.f;}
-	float bottom() {return y() + shape.getSize().y/2.f;}
 };
 
 template<class T1, class T2> bool isIntersecting(T1& mA, T2&mB){
@@ -142,6 +140,14 @@ int main(){
 
 	while(true){
 		window.clear(Color::Black);
+
+		Event event;
+		while(window.pollEvent(event)){
+			if(event.type == Event::Closed){
+				window.close();
+				break;
+			}
+		}
 		
 		if(Keyboard::isKeyPressed(Keyboard::Key::Escape)) break;
 		
